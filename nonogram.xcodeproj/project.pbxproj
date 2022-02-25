@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		92F2864227C8CCFA006464EC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92F2864127C8CCFA006464EC /* main.cpp */; };
+		92F8008727C8D6F800623618 /* SDL2_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922BACE727C8D3EB005BBA0E /* SDL2_image.framework */; };
+		92F8008A27C8D6FA00623618 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 922BACE627C8D3EB005BBA0E /* SDL2.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -23,6 +25,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		922BACE627C8D3EB005BBA0E /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
+		922BACE727C8D3EB005BBA0E /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		92F2863E27C8CCFA006464EC /* nonogram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nonogram; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F2864127C8CCFA006464EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -32,6 +36,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92F8008727C8D6F800623618 /* SDL2_image.framework in Frameworks */,
+				92F8008A27C8D6FA00623618 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +49,7 @@
 			children = (
 				92F2864027C8CCFA006464EC /* nonogram */,
 				92F2863F27C8CCFA006464EC /* Products */,
+				92F2864827C8CE5C006464EC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,6 +67,15 @@
 				92F2864127C8CCFA006464EC /* main.cpp */,
 			);
 			path = nonogram;
+			sourceTree = "<group>";
+		};
+		92F2864827C8CE5C006464EC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				922BACE727C8D3EB005BBA0E /* SDL2_image.framework */,
+				922BACE627C8D3EB005BBA0E /* SDL2.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -240,9 +256,18 @@
 		92F2864627C8CCFA006464EC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = nonogram/nonogram.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = H2Y3WUCRDW;
 				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					/Library/Frameworks,
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -250,9 +275,18 @@
 		92F2864727C8CCFA006464EC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = nonogram/nonogram.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = H2Y3WUCRDW;
 				ENABLE_HARDENED_RUNTIME = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					/Library/Frameworks,
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = (
+					/Library/Frameworks/SDL2.framework/Headers,
+					/Library/Frameworks/SDL2_image.framework/Headers,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
