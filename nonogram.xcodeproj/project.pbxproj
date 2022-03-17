@@ -29,6 +29,7 @@
 		922BACE727C8D3EB005BBA0E /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
 		92F2863E27C8CCFA006464EC /* nonogram */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nonogram; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F2864127C8CCFA006464EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		92F4BE1827D9FBD700654C3C /* level1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = level1.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +65,7 @@
 		92F2864027C8CCFA006464EC /* nonogram */ = {
 			isa = PBXGroup;
 			children = (
+				92F4BE1627D9FB5C00654C3C /* levels */,
 				92F2864127C8CCFA006464EC /* main.cpp */,
 			);
 			path = nonogram;
@@ -76,6 +78,14 @@
 				922BACE627C8D3EB005BBA0E /* SDL2.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		92F4BE1627D9FB5C00654C3C /* levels */ = {
+			isa = PBXGroup;
+			children = (
+				92F4BE1827D9FBD700654C3C /* level1.txt */,
+			);
+			path = levels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
