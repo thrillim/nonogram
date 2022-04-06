@@ -63,9 +63,9 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
         SDL_FreeSurface(loadedImage);
         
         if (texture == nullptr) {
-            logSDLError(std::cout, "CreateTextureFromSurface"); }
+            logSDLError(std::cout, "CreateTextureFromSurface", false); }
     }
-    else { logSDLError(std::cout, "LoadBMP"); }
+    else { logSDLError(std::cout, "LoadBMP", false); }
     return texture;
 }
 
