@@ -17,6 +17,8 @@ void initSDL(SDL_Window* &window,
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
         logSDLError(std::cout, "SDL_Init", true);
     
+    IMG_Init(IMG_INIT_PNG);
+    
     window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_CENTERED,
        SDL_WINDOWPOS_CENTERED, screenWidth, screenHeight, SDL_WINDOW_SHOWN);
     
@@ -37,6 +39,7 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer)
 {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
 }
 
@@ -56,7 +59,7 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
     //Avoid 'dangling pointer'
     SDL_Texture *texture = nullptr;
 
-    SDL_Surface *loadedImage = SDL_LoadBMP(file.c_str());
+    SDL_Surface *loadedImage = IMG_Load(file.c_str());
     //If no error, change to texture
     if (loadedImage != nullptr) {
         texture = SDL_CreateTextureFromSurface(ren, loadedImage);
@@ -65,7 +68,7 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
         if (texture == nullptr) {
             logSDLError(std::cout, "CreateTextureFromSurface", false); }
     }
-    else { logSDLError(std::cout, "LoadBMP", false); }
+    else { logSDLError(std::cout, "IMG_Load", false); }
     return texture;
 }
 
