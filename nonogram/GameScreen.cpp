@@ -5,18 +5,20 @@
 
 const char WINDOW_TITLE[] = "Nonogram";
 const int SCREEN_WIDTH=960, SCREEN_HEIGHT=640;
-const int MENU_PAGE = 2;
+const int MENU_PAGE = 1;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
 
-SDL_Texture *mainMenu[MENU_PAGE+1], *playGround;
+SDL_Texture *levelMouse, *mainMenu[MENU_PAGE+1], *playGround;
 SDL_Texture *dot, *fill, *achive;
 SDL_Texture *numberOn[MAX_NUM+1], *numberOff[MAX_NUM+1];
 
 void load_SDL_And_Images()
 {
     initSDL(window, renderer, SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+    levelMouse = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/levelMouse.png", renderer);
+    
     bool is_load_main_failed = false;
     for (int i=1; i<=MENU_PAGE; i++)
     {
@@ -83,6 +85,28 @@ void unload_SDL_And_Images()
 void showMainMenu()
 {
     renderTexture(mainMenu[1], renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+}
+
+void showLevelMouse(int lvl)
+{
+    if (lvl < 5)
+    {
+        renderTexture(levelMouse, renderer, 381+(lvl-1)*134, 245, 138, 50);
+    }
+    else
+    {
+        renderTexture(levelMouse, renderer, 381+(lvl-5)*134, 448, 138, 50);
+    }
+}
+
+void delLevelMouse()
+{
+    SDL_DestroyTexture(levelMouse);
+}
+
+void showBack()
+{
+    renderTexture(playGround, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
 void renderScreen()
