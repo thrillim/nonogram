@@ -9,15 +9,19 @@
 
 int level = 1;
 int mainRows, mainCols, headerRows, sideCols, blank;
+int cellSide, originX, originY;
 char **mainTable = nullptr;
-int **headerTable = nullptr, **sideTable = nullptr;
+int **headerTable = nullptr, **sideTable = nullptr,
+
+bool isUpdated = true;
 bool isWin = false;
 bool is_lvl_loaded_failed = true;
-bool is_data_loaded_failed = true;
 
 void chooseLevel();
 void loadLevel(int lvl);
 void loadData(char **mainTable, int **headerTable, int **sideTable);
+void renderTable();
+void playing();
 
 struct Visibility
 {
@@ -59,35 +63,12 @@ int main(int argc, char* argv[])
     
     loadData(mainTable, headerTable, sideTable);
     
-    for (int i = 0; i < mainRows; i++)
+    do
     {
-        for (int k = 0; k < mainCols; k++)
-        {
-            std::cout << mainTable[i][k] << " ";
-        }
-        std::cout << std::endl;
+        renderTable();
+        playing();
     }
-    std::cout << std::endl;
-    
-    for (int i = 0; i < headerRows; i++)
-        {
-            for (int k = 0; k < mainCols; k++)
-            {
-                std::cout << headerTable[i][k] << " ";
-            }
-            std::cout << std::endl;
-        }
-    std::cout << std::endl;
-    
-    for (int i = 0; i < mainRows; i++)
-    {
-        for (int k = 0; k < sideCols; k++)
-        {
-            std::cout << sideTable[i][k] << " ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    while (isWin == false);
 
     //begin---should i put 'del table' here?----------------
     for (int i = 0; i < mainRows; i++)
@@ -151,20 +132,16 @@ void chooseLevel()
 
 void loadLevel(int lvl)
 {
-    std::cout << lvl;
+    std::cout << lvl << std::endl;
     std::string pathProp = "/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/levels/level-"+std::to_string(level)+"-prop.txt";
     std::ifstream pFile(pathProp);
     if (pFile.is_open())
     {
         pFile >> mainRows >> mainCols >> headerRows >> sideCols >> blank;
-        std::cout << std::endl << mainRows << std::endl << mainCols
-                  << std::endl << headerRows << std::endl << sideCols
-                  << std::endl << blank << std::endl;
     }
     pFile.close();
     is_lvl_loaded_failed = false;
     delLevelMouse();
-    showBack();
 }
 
 void loadData(char **mainTable, int **headerTable, int **sideTable)
@@ -198,4 +175,96 @@ void loadData(char **mainTable, int **headerTable, int **sideTable)
         }
     }
     file.close();
+}
+
+void renderTable()
+{
+    showBack();
+    int totalCols = sideCols + mainCols;
+    int totalRows = headerRows + mainRows;
+    int cellHeight = MAX_TABLE_HEIGHT/totalRows;
+    int cellWidth = MAX_TABLE_WIDTH/totalCols;
+    cellSide = (cellHeight > cellWidth) ? cellWidth : cellHeight;
+    originX = SCREEN_WIDTH/2 - cellSide * (float)totalCols/2;
+    originY = SCREEN_HEIGHT/2 - cellSide * (float)totalRows/2;
+    
+//    std::cout << cellSide << std::endl;
+    for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
+    {
+        showLine(originX, originY + (i-1)*cellSide, cellSide*totalRows+1, 2);
+        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
+        {
+            showLine(originX, originY + (i-1)*cellSide, cellSide*totalRows+1, 3);
+        }
+    }
+    for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
+    {
+        showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalCols+1);
+        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
+        {
+            showLine(originX + (i-1)*cellSide, originY, 3, cellSide*totalCols+1);
+        }
+    }
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (headerTable[i][k] != 0)
+            {
+                showNumOff(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            if (sideTable[i][k] != 0)
+            {
+                showNumOff(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (headerTable[i][k] != 0)
+            {
+                showNumOn(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            if (sideTable[i][k] != 0)
+            {
+                showNumOn(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+}
+
+void playing()
+{
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if ((e.type == SDL_QUIT) ||
+            (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+        {
+            unload_SDL_And_Images();
+            exit(1);
+        }
+        if (e.type == SDL_KEYDOWN)
+        {
+            if (e.key.keysym.sym == SDLK_RETURN)
+            {
+                isWin = true;
+            }
+        }
+    }
+    renderScreen();
 }

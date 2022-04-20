@@ -4,7 +4,6 @@
 #include "GameConstants.h"
 
 const char WINDOW_TITLE[] = "Nonogram";
-const int SCREEN_WIDTH=960, SCREEN_HEIGHT=640;
 const int MENU_PAGE = 1;
 
 SDL_Window* window;
@@ -104,11 +103,27 @@ void showLevelMouse(int lvl)
 void delLevelMouse()
 {
     SDL_DestroyTexture(levelMouse);
+    SDL_DestroyTexture(mainMenu[1]);
 }
 
 void showBack()
 {
     renderTexture(playGround, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+}
+
+void showLine(int x, int y, int w, int h)
+{
+    renderTexture(line, renderer, x, y, w, h);
+}
+
+void showNumOff(int num, int x, int y, int w, int h)
+{
+    renderTexture(numberOff[num], renderer, x, y, w, h);
+}
+
+void showNumOn(int num, int x, int y, int w, int h)
+{
+    renderTexture(numberOn[num], renderer, x, y, w, h);
 }
 
 void renderScreen()
