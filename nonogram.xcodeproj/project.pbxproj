@@ -29,6 +29,7 @@
 /* Begin PBXFileReference section */
 		922BACE627C8D3EB005BBA0E /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../../../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		922BACE727C8D3EB005BBA0E /* SDL2_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_image.framework; path = ../../../../../../../Library/Frameworks/SDL2_image.framework; sourceTree = "<group>"; };
+		9287AB0F281038390054BE36 /* levels */ = {isa = PBXFileReference; lastKnownFileType = folder; path = levels; sourceTree = "<group>"; };
 		92BF314027FDE50A008635E0 /* GameScreen.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameScreen.cpp; sourceTree = "<group>"; };
 		92BF314127FDE50A008635E0 /* GameScreen.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GameScreen.hpp; sourceTree = "<group>"; };
 		92BF314327FDE5BB008635E0 /* GameConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameConstants.h; sourceTree = "<group>"; };
@@ -72,6 +73,7 @@
 		92F2864027C8CCFA006464EC /* nonogram */ = {
 			isa = PBXGroup;
 			children = (
+				9287AB0F281038390054BE36 /* levels */,
 				92BF316627FE0D65008635E0 /* assets */,
 				92F2864127C8CCFA006464EC /* main.cpp */,
 				92DD4E9D27F553ED00379F6F /* SDL_Utils.cpp */,

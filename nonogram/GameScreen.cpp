@@ -11,7 +11,7 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 
 SDL_Texture *levelMouse, *mainMenu[MENU_PAGE+1], *playGround;
-SDL_Texture *dot, *fill, *achive;
+SDL_Texture *dot, *fill, *achive, *line;
 SDL_Texture *numberOn[MAX_NUM+1], *numberOff[MAX_NUM+1];
 
 void load_SDL_And_Images()
@@ -35,6 +35,8 @@ void load_SDL_And_Images()
     dot = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/dot.png", renderer);
     fill = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/fill.png", renderer);
     achive = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/achieve.png", renderer);
+    
+    line = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/line.png", renderer);
     
     bool is_load_num_on_failed = false;
     bool is_load_num_off_failed = false;
