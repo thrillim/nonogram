@@ -9,9 +9,10 @@
 
 int level = 1;
 int mainRows, mainCols, headerRows, sideCols, blank;
-int cellSide, originX, originY;
+int totalRows, totalCols, cellSide, originX, originY;
 char **mainTable = nullptr;
-int **headerTable = nullptr, **sideTable = nullptr,
+int **headerTable = nullptr, **sideTable = nullptr;
+int clickRow, clickCol, score;
 
 bool isUpdated = true;
 bool isWin = false;
@@ -19,7 +20,7 @@ bool is_lvl_loaded_failed = true;
 
 void chooseLevel();
 void loadLevel(int lvl);
-void loadData(char **mainTable, int **headerTable, int **sideTable);
+void loadData();
 void renderTable();
 void playing();
 
@@ -61,7 +62,7 @@ int main(int argc, char* argv[])
         sideTable[i] = new int[sideCols];
     //end-----should i put 'init table' here?----------------
     
-    loadData(mainTable, headerTable, sideTable);
+    loadData();
     
     do
     {
@@ -85,6 +86,7 @@ int main(int argc, char* argv[])
     //end-----should i put 'del table' here?----------------
     
     
+    renderScreen();
     waitUntilKeyPressed();
     unload_SDL_And_Images();
     return 0;
@@ -139,12 +141,13 @@ void loadLevel(int lvl)
     {
         pFile >> mainRows >> mainCols >> headerRows >> sideCols >> blank;
     }
+    score = blank;
     pFile.close();
     is_lvl_loaded_failed = false;
     delLevelMouse();
 }
 
-void loadData(char **mainTable, int **headerTable, int **sideTable)
+void loadData()
 {
     std::string path = "/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/levels/level-"+std::to_string(level)+".txt";
     std::ifstream file(path);
@@ -180,29 +183,28 @@ void loadData(char **mainTable, int **headerTable, int **sideTable)
 void renderTable()
 {
     showBack();
-    int totalCols = sideCols + mainCols;
-    int totalRows = headerRows + mainRows;
+    totalCols = sideCols + mainCols;
+    totalRows = headerRows + mainRows;
     int cellHeight = MAX_TABLE_HEIGHT/totalRows;
     int cellWidth = MAX_TABLE_WIDTH/totalCols;
     cellSide = (cellHeight > cellWidth) ? cellWidth : cellHeight;
     originX = SCREEN_WIDTH/2 - cellSide * (float)totalCols/2;
     originY = SCREEN_HEIGHT/2 - cellSide * (float)totalRows/2;
     
-//    std::cout << cellSide << std::endl;
     for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
     {
-        showLine(originX, originY + (i-1)*cellSide, cellSide*totalRows+1, 2);
+        showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 2);
         if ((i == 1) || (i - headerRows - 1) % 5 == 0)
         {
-            showLine(originX, originY + (i-1)*cellSide, cellSide*totalRows+1, 3);
+            showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 3);
         }
     }
     for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
     {
-        showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalCols+1);
+        showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+1);
         if ((i == 1) || (i - sideCols - 1) % 5 == 0)
         {
-            showLine(originX + (i-1)*cellSide, originY, 3, cellSide*totalCols+1);
+            showLine(originX + (i-1)*cellSide, originY, 3, cellSide*totalRows+2);
         }
     }
     for (int i = 0; i < headerRows; i++)
@@ -245,6 +247,7 @@ void renderTable()
             }
         }
     }
+    renderScreen();
 }
 
 void playing()
@@ -260,11 +263,26 @@ void playing()
         }
         if (e.type == SDL_KEYDOWN)
         {
-            if (e.key.keysym.sym == SDLK_RETURN)
+            if (e.key.keysym.sym == SDLK_r)
             {
                 isWin = true;
             }
         }
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if ((e.button.x > originX)&&
+                (e.button.y > originY)&&
+                (e.button.x < originX + cellSide*totalCols)&&
+                (e.button.y < originY + cellSide*totalRows))
+                //click inside the table
+            {
+                clickRow = (e.button.x - originX)/cellSide;
+                clickCol = (e.button.y - originY)/cellSide;
+                std::cout << clickRow << " " << clickCol << std::endl;
+                isUpdated = false;
+            }
+
+        }
     }
-    renderScreen();
+//    renderScreen();
 }
