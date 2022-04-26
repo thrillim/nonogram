@@ -276,12 +276,39 @@ void playing()
                 (e.button.y < originY + cellSide*totalRows))
                 //click inside the table
             {
-                clickRow = (e.button.x - originX)/cellSide;
-                clickCol = (e.button.y - originY)/cellSide;
+                clickCol = (e.button.x - originX)/cellSide;
+                clickRow = (e.button.y - originY)/cellSide;
                 std::cout << clickRow << " " << clickCol << std::endl;
                 isUpdated = false;
+                if (clickRow < headerRows)
+                {
+                    if (clickCol < sideCols) //out corner
+                    {
+                        clickRow = -1;
+                        clickCol = -1;
+                        std::cout << "out " << clickRow << " " << clickCol << std::endl;
+                    }
+                    else //header
+                    {
+                        clickCol -= sideCols;
+                        std::cout << "header " << clickRow << " " << clickCol << std::endl;
+                    }
+                }
+                else
+                {
+                    if (clickCol < sideCols) //side
+                    {
+                        clickRow -= headerRows;
+                        std::cout << "side " << clickRow << " " << clickCol << std::endl;
+                    }
+                    else //main
+                    {
+                        clickRow -= headerRows;
+                        clickCol -= sideCols;
+                        std::cout << "main " << clickRow << " " << clickCol << std::endl;
+                    }
+                }
             }
-
         }
     }
 //    renderScreen();
