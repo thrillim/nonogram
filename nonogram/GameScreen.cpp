@@ -71,6 +71,7 @@ void unload_SDL_And_Images()
     SDL_DestroyTexture(fill);
     SDL_DestroyTexture(dot);
     SDL_DestroyTexture(achive);
+    SDL_DestroyTexture(line);
     for (int i = 0; i <= MENU_PAGE; i++)
     {
         SDL_DestroyTexture(mainMenu[i]);
@@ -124,6 +125,16 @@ void showNumOff(int num, int x, int y, int w, int h)
 void showNumOn(int num, int x, int y, int w, int h)
 {
     renderTexture(numberOn[num], renderer, x, y, w, h);
+}
+
+void showMarked(int x, int y, int w, int h)
+{
+    renderTexture(fill, renderer, x, y, w, h);
+}
+
+void showReward()
+{
+    renderTexture(achive, renderer, SCREEN_WIDTH - PADDING_LEFT, PADDING_TOP, 110, 151);
 }
 
 void renderScreen()

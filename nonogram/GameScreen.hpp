@@ -26,6 +26,10 @@ void showNumOff(int num, int x, int y, int w, int h);
 
 void showNumOn(int num, int x, int y, int w, int h);
 
+void showMarked(int x, int y, int w, int h);
+
+void showReward();
+
 void renderScreen();
 
 #endif /* GameScreen_hpp */

@@ -12,7 +12,10 @@ int mainRows, mainCols, headerRows, sideCols, blank;
 int totalRows, totalCols, cellSide, originX, originY;
 char **mainTable = nullptr;
 int **headerTable = nullptr, **sideTable = nullptr;
+char **mainStatus = nullptr;
+int **headerStatus = nullptr, **sideStatus = nullptr;
 int clickRow, clickCol, score;
+int mainClickValue;
 
 bool isUpdated = true;
 bool isWin = false;
@@ -23,6 +26,7 @@ void loadLevel(int lvl);
 void loadData();
 void renderTable();
 void playing();
+void updateScreen();
 
 struct Visibility
 {
@@ -60,16 +64,43 @@ int main(int argc, char* argv[])
     sideTable = new int *[mainRows];
     for (int i = 0; i < mainRows; i++)
         sideTable[i] = new int[sideCols];
+    
+    mainStatus = new char *[mainRows];
+    for (int i = 0; i < mainRows; i++)
+        mainStatus[i] = new char[mainCols];
+    
+    headerStatus = new int *[headerRows];
+    for (int i = 0; i < headerRows; i++)
+        headerStatus[i] = new int[mainCols];
+    
+    sideStatus = new int *[mainRows];
+    for (int i = 0; i < mainRows; i++)
+        sideStatus[i] = new int[sideCols];
     //end-----should i put 'init table' here?----------------
     
-    loadData();
-    
+    loadData(); //can import status file here
     do
     {
+        if (score == mainRows*mainCols)
+        {
+            isWin = true;
+        }
+        
         renderTable();
+        
         playing();
+        
+        if (!isUpdated)
+        {
+            updateScreen();
+        }
     }
     while (isWin == false);
+    
+    if (isWin == true)
+    {
+        showReward();
+    }
 
     //begin---should i put 'del table' here?----------------
     for (int i = 0; i < mainRows; i++)
@@ -83,6 +114,18 @@ int main(int argc, char* argv[])
     for (int i = 0; i < mainRows; i++)
         delete[] sideTable[i];
     delete [] sideTable;
+    
+    for (int i = 0; i < mainRows; i++)
+        delete[] mainStatus[i];
+    delete [] mainStatus;
+
+    for (int i = 0; i < headerRows; i++)
+        delete[] headerStatus[i];
+    delete [] headerStatus;
+
+    for (int i = 0; i < mainRows; i++)
+        delete[] sideStatus[i];
+    delete [] sideStatus;
     //end-----should i put 'del table' here?----------------
     
     
@@ -178,6 +221,30 @@ void loadData()
         }
     }
     file.close();
+    // init value for status tables
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            mainStatus[i][k] = '.';
+        }
+    }
+    
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            headerStatus[i][k] = 1;
+        }
+    }
+    
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            sideStatus[i][k] = 1;
+        }
+    }
 }
 
 void renderTable()
@@ -207,26 +274,7 @@ void renderTable()
             showLine(originX + (i-1)*cellSide, originY, 3, cellSide*totalRows+2);
         }
     }
-    for (int i = 0; i < headerRows; i++)
-    {
-        for (int k = 0; k < mainCols; k++)
-        {
-            if (headerTable[i][k] != 0)
-            {
-                showNumOff(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
-            }
-        }
-    }
-    for (int i = 0; i < mainRows; i++)
-    {
-        for (int k = 0; k < sideCols; k++)
-        {
-            if (sideTable[i][k] != 0)
-            {
-                showNumOff(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
-            }
-        }
-    }
+    //show num-on at the bigining
     for (int i = 0; i < headerRows; i++)
     {
         for (int k = 0; k < mainCols; k++)
@@ -278,20 +326,26 @@ void playing()
             {
                 clickCol = (e.button.x - originX)/cellSide;
                 clickRow = (e.button.y - originY)/cellSide;
-                std::cout << clickRow << " " << clickCol << std::endl;
-                isUpdated = false;
                 if (clickRow < headerRows)
                 {
                     if (clickCol < sideCols) //out corner
                     {
                         clickRow = -1;
                         clickCol = -1;
-                        std::cout << "out " << clickRow << " " << clickCol << std::endl;
+                        //do nothing
                     }
                     else //header
                     {
                         clickCol -= sideCols;
-                        std::cout << "header " << clickRow << " " << clickCol << std::endl;
+                        if (headerStatus[clickRow][clickCol] == 0)
+                        {
+                            headerStatus[clickRow][clickCol] = 1;
+                        }
+                        else
+                        {
+                            headerStatus[clickRow][clickCol] = 0;
+                        }
+                        isUpdated = false;
                     }
                 }
                 else
@@ -299,17 +353,114 @@ void playing()
                     if (clickCol < sideCols) //side
                     {
                         clickRow -= headerRows;
-                        std::cout << "side " << clickRow << " " << clickCol << std::endl;
+                        if (sideStatus[clickRow][clickCol] == 0)
+                        {
+                            sideStatus[clickRow][clickCol] = 1;
+                        }
+                        else
+                        {
+                            sideStatus[clickRow][clickCol] = 0;
+                        }
+                        isUpdated = false;
                     }
                     else //main
                     {
                         clickRow -= headerRows;
                         clickCol -= sideCols;
-                        std::cout << "main " << clickRow << " " << clickCol << std::endl;
+                        if (e.button.button == SDL_BUTTON_LEFT)
+                        {
+                            if (mainStatus[clickRow][clickCol] == '.')
+                            {
+                                mainStatus[clickRow][clickCol] = '0';
+                                isUpdated = false;
+                                if (mainStatus[clickRow][clickCol] == mainTable[clickRow][clickCol])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
+                        if (e.button.button == SDL_BUTTON_RIGHT)
+                        {
+                            if (mainStatus[clickRow][clickCol] == '0')
+                            {
+                                mainStatus[clickRow][clickCol] = '.';
+                                isUpdated = false;
+                                if (mainStatus[clickRow][clickCol] == mainTable[clickRow][clickCol])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
                     }
                 }
+                std::cout << clickRow << " " << clickCol << " " << score << std::endl;
             }
         }
     }
-//    renderScreen();
+}
+
+void updateScreen()
+{
+    //show num-off every screen
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (headerTable[i][k] != 0)
+            {
+                showNumOff(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            if (sideTable[i][k] != 0)
+            {
+                showNumOff(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    //show num-on if match condition
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (headerStatus[i][k] == 1)
+            {
+                showNumOn(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            if (sideStatus[i][k] == 1)
+            {
+                showNumOn(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
+            }
+        }
+    }
+    //show marked cell
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (mainStatus[i][k] == '0')
+            {
+                showMarked(originX+cellSide*(sideCols+k)+1, originY+cellSide*(headerRows+i), cellSide, cellSide);
+            }
+        }
+    }
+    renderScreen();
 }
