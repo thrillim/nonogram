@@ -134,7 +134,7 @@ void showMarked(int x, int y, int w, int h)
 
 void showReward()
 {
-    renderTexture(achive, renderer, SCREEN_WIDTH - PADDING_LEFT, PADDING_TOP, 110, 151);
+    renderTexture(achive, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
 }
 
 void renderScreen()

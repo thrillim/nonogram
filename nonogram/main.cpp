@@ -15,7 +15,6 @@ int **headerTable = nullptr, **sideTable = nullptr;
 char **mainStatus = nullptr;
 int **headerStatus = nullptr, **sideStatus = nullptr;
 int clickRow, clickCol, score;
-int mainClickValue;
 
 bool isUpdated = true;
 bool isWin = false;
@@ -28,19 +27,6 @@ void renderTable();
 void playing();
 void updateScreen();
 
-struct Visibility
-{
-    bool isVisible=false;   //Có đang được hiển thị trên màn hình hay không
-    int showTime=-1;        //Thời gian hiển thị nếu đang hiển thị. Nếu <=0: hiển thị không thời hạn
-    int waitTime=-1;        //Thời gian đợi để hiển thị nếu đang ẩn. Nếu <=0: ẩn không thời hạn
-};
-
-struct ScreenVisibility
-{
-    Visibility vStartMsg, vHumanMsg, vHumanNumber;
-    Visibility vComputerMsg, vComputerComparision, vJustClicked;
-    bool isUpToDate=false;
-};
 
 int main(int argc, char* argv[])
 {
@@ -79,14 +65,14 @@ int main(int argc, char* argv[])
     //end-----should i put 'init table' here?----------------
     
     loadData(); //can import status file here
+    renderTable(); //init table when haven't click
+    
     do
     {
         if (score == mainRows*mainCols)
         {
             isWin = true;
         }
-        
-        renderTable();
         
         playing();
         
@@ -100,6 +86,7 @@ int main(int argc, char* argv[])
     if (isWin == true)
     {
         showReward();
+        renderScreen();
     }
 
     //begin---should i put 'del table' here?----------------
@@ -129,7 +116,6 @@ int main(int argc, char* argv[])
     //end-----should i put 'del table' here?----------------
     
     
-    renderScreen();
     waitUntilKeyPressed();
     unload_SDL_And_Images();
     return 0;
@@ -258,23 +244,7 @@ void renderTable()
     originX = SCREEN_WIDTH/2 - cellSide * (float)totalCols/2;
     originY = SCREEN_HEIGHT/2 - cellSide * (float)totalRows/2;
     
-    for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
-    {
-        showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 2);
-        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
-        {
-            showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 3);
-        }
-    }
-    for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
-    {
-        showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+1);
-        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
-        {
-            showLine(originX + (i-1)*cellSide, originY, 3, cellSide*totalRows+2);
-        }
-    }
-    //show num-on at the bigining
+    //show num-on at the beginning
     for (int i = 0; i < headerRows; i++)
     {
         for (int k = 0; k < mainCols; k++)
@@ -295,6 +265,24 @@ void renderTable()
             }
         }
     }
+    
+    for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
+    {
+        showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 1);
+        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
+        {
+            showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 2);
+        }
+    }
+    for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
+    {
+        showLine(originX + (i-1)*cellSide, originY, 1, cellSide*totalRows+1);
+        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
+        {
+            showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
+        }
+    }
+
     renderScreen();
 }
 
@@ -409,6 +397,7 @@ void playing()
 
 void updateScreen()
 {
+    showBack();
     //show num-off every screen
     for (int i = 0; i < headerRows; i++)
     {
@@ -462,5 +451,25 @@ void updateScreen()
             }
         }
     }
+    
+    //draw again because init table was disappeare
+    
+    for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
+    {
+        showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 1);
+        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
+        {
+            showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 2);
+        }
+    }
+    for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
+    {
+        showLine(originX + (i-1)*cellSide, originY, 1, cellSide*totalRows+1);
+        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
+        {
+            showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
+        }
+    }
+
     renderScreen();
 }
