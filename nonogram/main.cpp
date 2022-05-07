@@ -15,6 +15,8 @@ int **headerTable = nullptr, **sideTable = nullptr;
 char **mainStatus = nullptr;
 int **headerStatus = nullptr, **sideStatus = nullptr;
 int clickRow, clickCol, score;
+int holdX1 = -1, holdY1 = -1, holdX2, holdY2;
+bool holding = false;
 
 bool isUpdated = true;
 bool isWin = false;
@@ -72,6 +74,7 @@ int main(int argc, char* argv[])
         if (score == mainRows*mainCols)
         {
             isWin = true;
+            renderScreen();
         }
         
         playing();
@@ -114,7 +117,6 @@ int main(int argc, char* argv[])
         delete[] sideStatus[i];
     delete [] sideStatus;
     //end-----should i put 'del table' here?----------------
-    
     
     waitUntilKeyPressed();
     unload_SDL_And_Images();
@@ -238,6 +240,7 @@ void renderTable()
     showBack();
     totalCols = sideCols + mainCols;
     totalRows = headerRows + mainRows;
+
     int cellHeight = MAX_TABLE_HEIGHT/totalRows;
     int cellWidth = MAX_TABLE_WIDTH/totalCols;
     cellSide = (cellHeight > cellWidth) ? cellWidth : cellHeight;
@@ -370,6 +373,11 @@ void playing()
                                     score--;
                                 }
                             }
+                            holdX1 = clickRow;
+                            holdY1 = clickCol;
+                            holdX2 = clickRow;
+                            holdY2 = clickCol;
+                            holding = true;
                         }
                         if (e.button.button == SDL_BUTTON_RIGHT)
                         {
@@ -390,6 +398,114 @@ void playing()
                     }
                 }
                 std::cout << clickRow << " " << clickCol << " " << score << std::endl;
+            }
+            
+        }
+        
+        if (e.type == SDL_MOUSEBUTTONUP && holdX1 >= 0 && holdY1 >= 0) //release
+        {
+            if (e.button.button == SDL_BUTTON_LEFT)
+            {
+                holding = false;
+                //change mainStatus
+                if (abs(holdX1-holdX2) > abs(holdY1-holdY2)) //fix col
+                {
+                    bool isX1Smaller = (holdX1 < holdX2) ? true : false;
+                    if (isX1Smaller)
+                    {
+                        for (int i = holdX1; i <= holdX2; i++)
+                        {
+                            if (mainStatus[i][holdY1] == '.')
+                            {
+                                mainStatus[i][holdY1] = '0';
+                                isUpdated = false;
+                                if (mainStatus[i][holdY1] == mainTable[i][holdY1])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = holdX1; i >= holdX2; i--)
+                        {
+                            if (mainStatus[i][holdY1] == '.')
+                            {
+                                mainStatus[i][holdY1] = '0';
+                                isUpdated = false;
+                                if (mainStatus[i][holdY1] == mainTable[i][holdY1])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
+                    }
+                }
+                else //fix row
+                {
+                    bool isY1Smaller = (holdY1 < holdY2) ? true : false;
+                    if (isY1Smaller)
+                    {
+                        for (int i = holdY1; i <= holdY2; i++)
+                        {
+                            if (mainStatus[holdX1][i] == '.')
+                            {
+                                mainStatus[holdX1][i] = '0';
+                                isUpdated = false;
+                                if (mainStatus[holdX1][i] == mainTable[holdX1][i])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int i = holdY1; i >= holdY2; i--)
+                        {
+                            if (mainStatus[holdX1][i] == '.')
+                            {
+                                mainStatus[holdX1][i] = '0';
+                                isUpdated = false;
+                                if (mainStatus[holdX1][i] == mainTable[holdX1][i])
+                                {
+                                    score++;
+                                }
+                                else
+                                {
+                                    score--;
+                                }
+                            }
+                        }
+                    }
+                }
+                std::cout << holdX1 << " " << holdY1 << " " << holdX2 << " " << holdY2 << std::endl;
+                holdX1 = -1;
+                holdY1 = -1;
+                holdX2 = -1;
+                holdY2 = -1;
+            }
+        }
+        
+        if (e.type == SDL_MOUSEMOTION)
+        {
+            if (holding)
+            {
+                holdY2 = (e.motion.x - originX)/cellSide - sideCols;
+                holdX2 = (e.motion.y - originY)/cellSide - headerRows;
             }
         }
     }
@@ -440,6 +556,53 @@ void updateScreen()
             }
         }
     }
+    
+    //show holding cells
+    if (holdX1 >= 0 && holdY1 >= 0)
+    {
+        holdX2 = (holdX2 < 0) ? 0 : holdX2;
+        holdY2 = (holdY2 < 0) ? 0 : holdY2;
+        holdX2 = (holdX2 >= mainRows) ? (mainRows - 1) : holdX2;
+        holdY2 = (holdY2 >= mainCols) ? (mainCols - 1) : holdY2;
+    
+        if (abs(holdX1-holdX2) > abs(holdY1-holdY2)) //fix col
+        {
+            bool isX1Smaller = (holdX1 < holdX2) ? true : false;
+            if (isX1Smaller)
+            {
+                for (int i = holdX1; i <= holdX2; i++)
+                {
+                    showMarked(originX+cellSide*(sideCols+holdY1)+cellSide/4+1, originY+cellSide*(headerRows+i)+cellSide/4+1, cellSide/2, cellSide/2);
+                }
+            }
+            else
+            {
+                for (int i = holdX1; i >= holdX2; i--)
+                {
+                    showMarked(originX+cellSide*(sideCols+holdY1)+cellSide/4+1, originY+cellSide*(headerRows+i)+cellSide/4+1, cellSide/2, cellSide/2);
+                }
+            }
+        }
+        else //fix row
+        {
+            bool isY1Smaller = (holdY1 < holdY2) ? true : false;
+            if (isY1Smaller)
+            {
+                for (int i = holdY1; i <= holdY2; i++)
+                {
+                    showMarked(originX+cellSide*(sideCols+i)+cellSide/4+1, originY+cellSide*(headerRows+holdX1)+cellSide/4+1, cellSide/2, cellSide/2);
+                }
+            }
+            else
+            {
+                for (int i = holdY1; i >= holdY2; i--)
+                {
+                    showMarked(originX+cellSide*(sideCols+i)+cellSide/4+1, originY+cellSide*(headerRows+holdX1)+cellSide/4+1, cellSide/2, cellSide/2);
+                }
+            }
+        }
+    }
+    
     //show marked cell
     for (int i = 0; i < mainRows; i++)
     {
