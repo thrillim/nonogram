@@ -8,6 +8,7 @@
 #include "GameScreen.hpp"
 
 int level = 1;
+int isEn = true;
 int mainRows, mainCols, headerRows, sideCols, blank;
 int totalRows, totalCols, cellSide, originX, originY;
 char **mainTable = nullptr;
@@ -18,6 +19,7 @@ int clickRow, clickCol, score;
 int holdX1 = -1, holdY1 = -1, holdX2, holdY2;
 bool holding = false;
 
+bool isQuit = false;
 bool isUpdated = true;
 bool isWin = false;
 bool is_lvl_loaded_failed = true;
@@ -33,92 +35,94 @@ void updateScreen();
 int main(int argc, char* argv[])
 {
     load_SDL_And_Images();
-    
-    do {
-    showMainMenu();
-    chooseLevel();
-    }
-    while (is_lvl_loaded_failed);
-    
-    //begin---should i put 'init table' here?----------------
-    mainTable = new char *[mainRows];
-    for (int i = 0; i < mainRows; i++)
-        mainTable[i] = new char[mainCols];
-    
-    headerTable = new int *[headerRows];
-    for (int i = 0; i < headerRows; i++)
-        headerTable[i] = new int[mainCols];
-    
-    sideTable = new int *[mainRows];
-    for (int i = 0; i < mainRows; i++)
-        sideTable[i] = new int[sideCols];
-    
-    mainStatus = new char *[mainRows];
-    for (int i = 0; i < mainRows; i++)
-        mainStatus[i] = new char[mainCols];
-    
-    headerStatus = new int *[headerRows];
-    for (int i = 0; i < headerRows; i++)
-        headerStatus[i] = new int[mainCols];
-    
-    sideStatus = new int *[mainRows];
-    for (int i = 0; i < mainRows; i++)
-        sideStatus[i] = new int[sideCols];
-    //end-----should i put 'init table' here?----------------
-    
-    loadData(); //can import status file here
-    renderTable(); //init table when haven't click
-    
     do
     {
-        if (score == mainRows*mainCols)
+        do {
+        showMainMenu();
+        chooseLevel();
+        }
+        while (is_lvl_loaded_failed && isQuit == false);
+        
+        if (isQuit)
         {
-            isWin = true;
-            renderScreen();
+            break;
         }
         
-        playing();
+        //begin---should i put 'init table' here?----------------
+        mainTable = new char *[mainRows];
+        for (int i = 0; i < mainRows; i++)
+            mainTable[i] = new char[mainCols];
         
-        if (!isUpdated)
+        headerTable = new int *[headerRows];
+        for (int i = 0; i < headerRows; i++)
+            headerTable[i] = new int[mainCols];
+        
+        sideTable = new int *[mainRows];
+        for (int i = 0; i < mainRows; i++)
+            sideTable[i] = new int[sideCols];
+        
+        mainStatus = new char *[mainRows];
+        for (int i = 0; i < mainRows; i++)
+            mainStatus[i] = new char[mainCols];
+        
+        headerStatus = new int *[headerRows];
+        for (int i = 0; i < headerRows; i++)
+            headerStatus[i] = new int[mainCols];
+        
+        sideStatus = new int *[mainRows];
+        for (int i = 0; i < mainRows; i++)
+            sideStatus[i] = new int[sideCols];
+        //end-----should i put 'init table' here?----------------
+        
+        loadData(); //can import status file here
+        renderTable(); //init table when haven't click
+        
+        while (is_lvl_loaded_failed == false)
         {
-            updateScreen();
+            if (score == mainRows*mainCols)
+            {
+                isWin = true;
+            }
+            
+            if (!isUpdated)
+            {
+                updateScreen();
+            }
+            
+            playing();
+
         }
+        
+
+        //begin---should i put 'del table' here?----------------
+        for (int i = 0; i < mainRows; i++)
+            delete[] mainTable[i];
+        delete [] mainTable;
+
+        for (int i = 0; i < headerRows; i++)
+            delete[] headerTable[i];
+        delete [] headerTable;
+
+        for (int i = 0; i < mainRows; i++)
+            delete[] sideTable[i];
+        delete [] sideTable;
+        
+        for (int i = 0; i < mainRows; i++)
+            delete[] mainStatus[i];
+        delete [] mainStatus;
+
+        for (int i = 0; i < headerRows; i++)
+            delete[] headerStatus[i];
+        delete [] headerStatus;
+
+        for (int i = 0; i < mainRows; i++)
+            delete[] sideStatus[i];
+        delete [] sideStatus;
+        //end-----should i put 'del table' here?----------------
+        
     }
-    while (isWin == false);
+    while (isQuit == false);
     
-    if (isWin == true)
-    {
-        showReward();
-        renderScreen();
-    }
-
-    //begin---should i put 'del table' here?----------------
-    for (int i = 0; i < mainRows; i++)
-        delete[] mainTable[i];
-    delete [] mainTable;
-
-    for (int i = 0; i < headerRows; i++)
-        delete[] headerTable[i];
-    delete [] headerTable;
-
-    for (int i = 0; i < mainRows; i++)
-        delete[] sideTable[i];
-    delete [] sideTable;
-    
-    for (int i = 0; i < mainRows; i++)
-        delete[] mainStatus[i];
-    delete [] mainStatus;
-
-    for (int i = 0; i < headerRows; i++)
-        delete[] headerStatus[i];
-    delete [] headerStatus;
-
-    for (int i = 0; i < mainRows; i++)
-        delete[] sideStatus[i];
-    delete [] sideStatus;
-    //end-----should i put 'del table' here?----------------
-    
-    waitUntilKeyPressed();
     unload_SDL_And_Images();
     return 0;
 }
@@ -131,8 +135,7 @@ void chooseLevel()
         if ((e.type == SDL_QUIT) ||
             (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         {
-            unload_SDL_And_Images();
-            exit(1);
+            isQuit = true;
         }
         if (e.type == SDL_KEYDOWN)
         {
@@ -175,7 +178,6 @@ void loadLevel(int lvl)
     score = blank;
     pFile.close();
     is_lvl_loaded_failed = false;
-    delLevelMouse();
 }
 
 void loadData()
@@ -304,7 +306,7 @@ void playing()
         {
             if (e.key.keysym.sym == SDLK_r)
             {
-                isWin = true;
+                is_lvl_loaded_failed = true;
             }
         }
         if (e.type == SDL_MOUSEBUTTONDOWN)
@@ -633,6 +635,7 @@ void updateScreen()
             showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
         }
     }
-
+    showReward(isWin);
+    
     renderScreen();
 }

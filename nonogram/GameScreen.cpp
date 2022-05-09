@@ -9,14 +9,27 @@ const int MENU_PAGE = 1;
 SDL_Window* window;
 SDL_Renderer* renderer;
 
-SDL_Texture *levelMouse, *mainMenu[MENU_PAGE+1], *playGround;
-SDL_Texture *dot, *fill, *achive, *line;
+SDL_Texture *levelMouse, *insEn, *insVi, *mainMenu[MENU_PAGE+1], *playGround;
+SDL_Texture *conEn, *conVi, *saveEn, *saveVi;
+SDL_Texture *dot, *fill, *achive, *achiveTmp, *line;
 SDL_Texture *numberOn[MAX_NUM+1], *numberOff[MAX_NUM+1];
 
 void load_SDL_And_Images()
 {
     initSDL(window, renderer, SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     levelMouse = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/levelMouse.png", renderer);
+    
+    insEn = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/instruction-en.png", renderer);
+    
+    insVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/instruction-vi.png", renderer);
+    
+    conEn = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-en.png", renderer);
+    
+    conVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-vi.png", renderer);
+    
+    saveEn = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-en.png", renderer);
+    
+    saveVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-vi.png", renderer);
     
     bool is_load_main_failed = false;
     for (int i=1; i<=MENU_PAGE; i++)
@@ -33,6 +46,7 @@ void load_SDL_And_Images()
     playGround = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/playGround.png", renderer);
     dot = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/dot.png", renderer);
     fill = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/fill.png", renderer);
+    achiveTmp = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/achieve-tmp.png", renderer);
     achive = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/achieve.png", renderer);
     
     line = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/line.png", renderer);
@@ -101,16 +115,47 @@ void showLevelMouse(int lvl)
     }
 }
 
-void delLevelMouse()
+void showIns(bool isEn)
 {
-    SDL_DestroyTexture(levelMouse);
-    SDL_DestroyTexture(mainMenu[1]);
+    if (isEn)
+    {
+        renderTexture(insEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else
+    {
+        renderTexture(insVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 }
 
 void showBack()
 {
     renderTexture(playGround, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
+
+void showContinue(bool isEn)
+{
+    if (isEn)
+    {
+        renderTexture(conEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else
+    {
+        renderTexture(conVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+}
+
+void showSaveProcess(bool isEn)
+{
+    if (isEn)
+    {
+        renderTexture(saveEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    else
+    {
+        renderTexture(saveVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+}
+
 
 void showLine(int x, int y, int w, int h)
 {
@@ -132,9 +177,16 @@ void showMarked(int x, int y, int w, int h)
     renderTexture(fill, renderer, x, y, w, h);
 }
 
-void showReward()
+void showReward(bool isWin)
 {
-    renderTexture(achive, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
+    if (isWin)
+    {
+        renderTexture(achive, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
+    }
+    else
+    {
+        renderTexture(achiveTmp, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
+    }
 }
 
 void renderScreen()

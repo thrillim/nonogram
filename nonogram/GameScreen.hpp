@@ -16,9 +16,13 @@ void showMainMenu();
 
 void showLevelMouse(int lvl);
 
-void delLevelMouse();
+void showIns(bool isEn);
 
 void showBack();
+
+void showContinue(bool isEn);
+
+void showSaveProcess(bool isEn);
 
 void showLine(int x, int y, int w, int h);
 
@@ -28,7 +32,7 @@ void showNumOn(int num, int x, int y, int w, int h);
 
 void showMarked(int x, int y, int w, int h);
 
-void showReward();
+void showReward(bool isWin);
 
 void renderScreen();
 
