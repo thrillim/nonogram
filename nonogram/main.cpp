@@ -8,7 +8,7 @@
 #include "GameScreen.hpp"
 
 int level = 1;
-int isEn = false;
+int isEn = -1, isEnTmp = -1;
 int mainRows, mainCols, headerRows, sideCols, blank;
 int totalRows, totalCols, cellSide, originX, originY;
 char **mainTable = nullptr;
@@ -27,12 +27,14 @@ bool isWin = false;
 bool is_lvl_loaded_failed = true;
 bool is_data_loaded_failed = true;
 
+void instruct();
 void chooseLevel();
 void loadLevel(int lvl);
 void loadData();
 void askContinue();
 void renderTable();
 void playing();
+void preventAfterWin();
 void askSave();
 void updateScreen();
 
@@ -42,11 +44,12 @@ int main(int argc, char* argv[])
     load_SDL_And_Images();
     do
     {
-        do {
-        showMainMenu();
-        chooseLevel();
+        while (is_lvl_loaded_failed && isQuit == false)
+        {
+            showMainMenu();
+            instruct();
+            chooseLevel();
         }
-        while (is_lvl_loaded_failed && isQuit == false);
         
         if (isQuit)
         {
@@ -108,43 +111,7 @@ int main(int argc, char* argv[])
             }
             else //prevent modifing table after win
             {
-                SDL_Event e;
-                while (SDL_PollEvent(&e))
-                {
-                    if ((e.type == SDL_QUIT) ||
-                        (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
-                    {
-//                        unload_SDL_And_Images();
-//                        exit(1);
-                        is_lvl_loaded_failed = true;
-                    }
-                    if (e.type == SDL_KEYDOWN)
-                    {
-                        if (e.key.keysym.sym == SDLK_r)
-                        {
-                            while (isModified)
-                            {
-                                askSave();
-                            }
-                            is_lvl_loaded_failed = true;
-                        }
-                    }
-                    if (e.type == SDL_MOUSEBUTTONDOWN)
-                    {
-                        if ((e.button.x > 41)&&
-                            (e.button.y > 532)&&
-                            (e.button.x < 95)&&
-                            (e.button.y < 586))
-                            //click return button
-                        {
-                            while (isModified)
-                            {
-                                askSave();
-                            }
-                            is_lvl_loaded_failed = true;
-                        }
-                    }
-                }
+                preventAfterWin();
             }
         }
         
@@ -182,6 +149,55 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+void instruct()
+{
+    while (isEn >= 0)
+    {
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
+        {
+            showIns(isEn);
+            if ((e.type == SDL_QUIT) ||
+                (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+            {
+                isQuit = true;
+            }
+            if (e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                if ((e.button.x > 826)&&(e.button.y > 532)&&
+                    (e.button.x < 924)&&(e.button.y < 587))
+                    //click change language
+                {
+                    if (isEn == 1)
+                    {
+                        isEn = 0;
+                    }
+                    else
+                    {
+                        isEn = 1;
+                    }
+                }
+                if ((e.button.x > 41)&&(e.button.y > 532)&&
+                    (e.button.x < 95)&&(e.button.y < 586))
+                    //click return
+                {
+                    isEnTmp = isEn;
+                    isEn = -1;
+                }
+            }
+            if (e.type == SDL_KEYDOWN)
+            {
+                if (e.key.keysym.sym == SDLK_r)
+                {
+                    isEnTmp = isEn;
+                    isEn = -1;
+                }
+            }
+            renderScreen();
+        }
+    }
+}
+
 void chooseLevel()
 {
     SDL_Event e;
@@ -191,6 +207,15 @@ void chooseLevel()
             (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         {
             isQuit = true;
+        }
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if ((e.button.x > 91)&&(e.button.y > 446)&&
+                (e.button.x < 126)&&(e.button.y < 480))
+                //click instruction button
+            {
+                isEn = 1;
+            }
         }
         if (e.type == SDL_KEYDOWN)
         {
@@ -217,7 +242,10 @@ void chooseLevel()
             }
         }
     }
-    showLevelMouse(level);
+    if (isEn == -1)
+    {
+        showLevelMouse(level);
+    }
     isModified = false;
     renderScreen();
 }
@@ -311,9 +339,10 @@ void loadData()
 void askContinue()
 {
     showBack();
+    std::cout << "isOnPro: " << isOnProcess << std::endl;
     if (isOnProcess)
     {
-        showContinue(isEn);
+        showContinue(isEnTmp);
     }
     SDL_Event e;
     while (SDL_PollEvent(&e))
@@ -332,9 +361,10 @@ void askContinue()
                 //click new game
             {
                 std::cout << "New game" << std::endl;
-                isOnProcess = true;
+                isOnProcess = false;
                 isWin = false;
                 score = tmpScore;
+                isModified = true;
                 
                 for (int i = 0; i < mainRows; i++)
                 {
@@ -384,13 +414,28 @@ void renderTable()
     cellSide = (cellHeight > cellWidth) ? cellWidth : cellHeight;
     originX = SCREEN_WIDTH/2 - cellSide * (float)totalCols/2;
     originY = SCREEN_HEIGHT/2 - cellSide * (float)totalRows/2;
-    
+    //show num-off
+    for (int i = 0; i < headerRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            showNumOff(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
+        }
+    }
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < sideCols; k++)
+        {
+            showNumOff(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
+        }
+    }
+
     //show num-on at the beginning
     for (int i = 0; i < headerRows; i++)
     {
         for (int k = 0; k < mainCols; k++)
         {
-            if (headerTable[i][k] != 0)
+            if (headerStatus[i][k] != 0)
             {
                 showNumOn(headerTable[i][k], originX + (k+sideCols)*cellSide + 1, originY + i*cellSide + 1, cellSide-1, cellSide-1);
             }
@@ -400,17 +445,27 @@ void renderTable()
     {
         for (int k = 0; k < sideCols; k++)
         {
-            if (sideTable[i][k] != 0)
+            if (sideStatus[i][k] != 0)
             {
                 showNumOn(sideTable[i][k], originX + k*cellSide + 1, originY + (headerRows + i)*cellSide + 1, cellSide-1, cellSide-1);
             }
         }
     }
-    
+    //show marked cell
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            if (mainStatus[i][k] == '0')
+            {
+                showMarked(originX+cellSide*(sideCols+k)+1, originY+cellSide*(headerRows+i), cellSide, cellSide);
+            }
+        }
+    }
     for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
     {
         showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 1);
-        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
+        if ((i == 1) || ((i - headerRows - 1) % 5 == 0 && i > headerRows))
         {
             showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 2);
         }
@@ -418,7 +473,7 @@ void renderTable()
     for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
     {
         showLine(originX + (i-1)*cellSide, originY, 1, cellSide*totalRows+1);
-        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
+        if ((i == 1) || ((i - sideCols - 1) % 5 == 0 && i > sideCols))
         {
             showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
         }
@@ -436,6 +491,10 @@ void playing()
         if ((e.type == SDL_QUIT) ||
             (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
         {
+            while (isModified)
+            {
+                askSave();
+            }
             unload_SDL_And_Images();
             exit(1);
         }
@@ -671,10 +730,49 @@ void playing()
     }
 }
 
+void preventAfterWin()
+{
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if ((e.type == SDL_QUIT) ||
+            (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+        {
+            is_lvl_loaded_failed = true;
+        }
+        if (e.type == SDL_KEYDOWN)
+        {
+            if (e.key.keysym.sym == SDLK_r)
+            {
+                while (isModified)
+                {
+                    askSave();
+                }
+                is_lvl_loaded_failed = true;
+            }
+        }
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if ((e.button.x > 41)&&
+                (e.button.y > 532)&&
+                (e.button.x < 95)&&
+                (e.button.y < 586))
+                //click return button
+            {
+                while (isModified)
+                {
+                    askSave();
+                }
+                is_lvl_loaded_failed = true;
+            }
+        }
+    }
+}
+
 void askSave()
 {
     showBack();
-    showSaveProcess(isEn);
+    showSaveProcess(isEnTmp);
     SDL_Event e;
     while (SDL_PollEvent(&e))
     {
@@ -897,7 +995,7 @@ void updateScreen()
     for (int i = 1; i <= totalRows + 1; i++) //draw horizontal lines
     {
         showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+1, 1);
-        if ((i == 1) || (i - headerRows - 1) % 5 == 0)
+        if ((i == 1) || ((i - headerRows - 1) % 5 == 0 && i > headerRows))
         {
             showLine(originX, originY + (i-1)*cellSide, cellSide*totalCols+2, 2);
         }
@@ -905,7 +1003,7 @@ void updateScreen()
     for (int i = 1; i <= totalCols + 1; i++) //draw vertical lines
     {
         showLine(originX + (i-1)*cellSide, originY, 1, cellSide*totalRows+1);
-        if ((i == 1) || (i - sideCols - 1) % 5 == 0)
+        if ((i == 1) || ((i - sideCols - 1) % 5 == 0 && i > sideCols))
         {
             showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
         }

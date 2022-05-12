@@ -11,7 +11,7 @@ SDL_Renderer* renderer;
 
 SDL_Texture *levelMouse, *insEn, *insVi, *mainMenu[MENU_PAGE+1], *playGround;
 SDL_Texture *conEn, *conVi, *saveEn, *saveVi;
-SDL_Texture *dot, *fill, *achive, *achiveTmp, *line;
+SDL_Texture *dot, *fill, *achive, *line;
 SDL_Texture *numberOn[MAX_NUM+1], *numberOff[MAX_NUM+1];
 
 void load_SDL_And_Images()
@@ -46,7 +46,6 @@ void load_SDL_And_Images()
     playGround = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/playGround.png", renderer);
     dot = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/dot.png", renderer);
     fill = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/fill.png", renderer);
-    achiveTmp = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/achieve-tmp.png", renderer);
     achive = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/achieve.png", renderer);
     
     line = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/line.png", renderer);
@@ -115,15 +114,19 @@ void showLevelMouse(int lvl)
     }
 }
 
-void showIns(bool isEn)
+void showIns(int isEn)
 {
-    if (isEn)
+    if (isEn == 1)
     {
         renderTexture(insEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
-    else
+    if (isEn == 0)
     {
         renderTexture(insVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+    if (isEn == -1)
+    {
+        renderTexture(insEn, renderer, 0, 0, 0, 0);
     }
 }
 
@@ -132,25 +135,25 @@ void showBack()
     renderTexture(playGround, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
-void showContinue(bool isEn)
+void showContinue(int isEn)
 {
-    if (isEn)
+    if (isEn == 1 || isEn == -1)
     {
         renderTexture(conEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
-    else
+    if (isEn == 0)
     {
         renderTexture(conVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 }
 
-void showSaveProcess(bool isEn)
+void showSaveProcess(int isEn)
 {
-    if (isEn)
+    if (isEn == 1 || isEn == -1)
     {
         renderTexture(saveEn, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
-    else
+    if (isEn == 0)
     {
         renderTexture(saveVi, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
@@ -181,11 +184,11 @@ void showReward(bool isWin)
 {
     if (isWin)
     {
-        renderTexture(achive, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
+        renderTexture(achive, renderer, SCREEN_WIDTH - PADDING_LEFT - 40, PADDING_TOP, 110, 151);
     }
     else
     {
-        renderTexture(achiveTmp, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 110, 151);
+        renderTexture(achive, renderer, SCREEN_WIDTH - 3/2*PADDING_LEFT, PADDING_TOP, 0, 0);
     }
 }
 
