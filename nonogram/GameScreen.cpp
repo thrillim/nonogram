@@ -27,9 +27,9 @@ void load_SDL_And_Images()
     
     conVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-vi.png", renderer);
     
-    saveEn = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-en.png", renderer);
+    saveEn = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/saveProcess-en.png", renderer);
     
-    saveVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/continue-vi.png", renderer);
+    saveVi = loadTexture("/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/assets/saveProcess-vi.png", renderer);
     
     bool is_load_main_failed = false;
     for (int i=1; i<=MENU_PAGE; i++)

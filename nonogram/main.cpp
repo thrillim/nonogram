@@ -8,27 +8,32 @@
 #include "GameScreen.hpp"
 
 int level = 1;
-int isEn = true;
+int isEn = false;
 int mainRows, mainCols, headerRows, sideCols, blank;
 int totalRows, totalCols, cellSide, originX, originY;
 char **mainTable = nullptr;
 int **headerTable = nullptr, **sideTable = nullptr;
 char **mainStatus = nullptr;
 int **headerStatus = nullptr, **sideStatus = nullptr;
-int clickRow, clickCol, score;
+int clickRow, clickCol, score, tmpScore;
 int holdX1 = -1, holdY1 = -1, holdX2, holdY2;
 bool holding = false;
+bool isOnProcess = false; //check if was on process/playing
+bool isModified = false; //check if show save process alert or not
 
 bool isQuit = false;
 bool isUpdated = true;
 bool isWin = false;
 bool is_lvl_loaded_failed = true;
+bool is_data_loaded_failed = true;
 
 void chooseLevel();
 void loadLevel(int lvl);
 void loadData();
+void askContinue();
 void renderTable();
 void playing();
+void askSave();
 void updateScreen();
 
 
@@ -45,7 +50,7 @@ int main(int argc, char* argv[])
         
         if (isQuit)
         {
-            break;
+            break; //get out of main loop
         }
         
         //begin---should i put 'init table' here?----------------
@@ -75,8 +80,16 @@ int main(int argc, char* argv[])
         //end-----should i put 'init table' here?----------------
         
         loadData(); //can import status file here
-        renderTable(); //init table when haven't click
+        if (isOnProcess)
+        {
+            while (is_data_loaded_failed == true)
+            {
+                askContinue();
+            }
+        }
         
+        renderTable(); //init table when haven't clicked
+
         while (is_lvl_loaded_failed == false)
         {
             if (score == mainRows*mainCols)
@@ -89,8 +102,50 @@ int main(int argc, char* argv[])
                 updateScreen();
             }
             
-            playing();
-
+            if (isWin == false)
+            {
+                playing();
+            }
+            else //prevent modifing table after win
+            {
+                SDL_Event e;
+                while (SDL_PollEvent(&e))
+                {
+                    if ((e.type == SDL_QUIT) ||
+                        (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+                    {
+//                        unload_SDL_And_Images();
+//                        exit(1);
+                        is_lvl_loaded_failed = true;
+                    }
+                    if (e.type == SDL_KEYDOWN)
+                    {
+                        if (e.key.keysym.sym == SDLK_r)
+                        {
+                            while (isModified)
+                            {
+                                askSave();
+                            }
+                            is_lvl_loaded_failed = true;
+                        }
+                    }
+                    if (e.type == SDL_MOUSEBUTTONDOWN)
+                    {
+                        if ((e.button.x > 41)&&
+                            (e.button.y > 532)&&
+                            (e.button.x < 95)&&
+                            (e.button.y < 586))
+                            //click return button
+                        {
+                            while (isModified)
+                            {
+                                askSave();
+                            }
+                            is_lvl_loaded_failed = true;
+                        }
+                    }
+                }
+            }
         }
         
 
@@ -163,6 +218,7 @@ void chooseLevel()
         }
     }
     showLevelMouse(level);
+    isModified = false;
     renderScreen();
 }
 
@@ -176,6 +232,7 @@ void loadLevel(int lvl)
         pFile >> mainRows >> mainCols >> headerRows >> sideCols >> blank;
     }
     score = blank;
+    tmpScore = blank;
     pFile.close();
     is_lvl_loaded_failed = false;
 }
@@ -211,30 +268,109 @@ void loadData()
         }
     }
     file.close();
-    // init value for status tables
-    for (int i = 0; i < mainRows; i++)
-    {
-        for (int k = 0; k < mainCols; k++)
-        {
-            mainStatus[i][k] = '.';
-        }
-    }
     
-    for (int i = 0; i < headerRows; i++)
-    {
-        for (int k = 0; k < mainCols; k++)
-        {
-            headerStatus[i][k] = 1;
-        }
-    }
+    // load value to status tables
+    std::string pathStatus = "/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/levels/level-"+std::to_string(level)+"-status.txt";
+    std::ifstream fileStatus (pathStatus);
     
-    for (int i = 0; i < mainRows; i++)
+    if (fileStatus.is_open())
     {
-        for (int k = 0; k < sideCols; k++)
+        fileStatus >> isOnProcess;
+        
+        fileStatus >> isWin;
+        
+        fileStatus >> score;
+                
+        for (int i = 0; i < mainRows; i++)
         {
-            sideStatus[i][k] = 1;
+            for (int k = 0; k < mainCols; k++)
+            {
+                fileStatus >> mainStatus[i][k];
+            }
+        }
+        
+        for (int i = 0; i < headerRows; i++)
+        {
+            for (int k = 0; k < mainCols; k++)
+            {
+                fileStatus >> headerStatus[i][k];
+            }
+        }
+        
+        for (int i = 0; i < mainRows; i++)
+        {
+            for (int k = 0; k < sideCols; k++)
+            {
+                fileStatus >> sideStatus[i][k];
+            }
         }
     }
+    fileStatus.close();
+}
+
+void askContinue()
+{
+    showBack();
+    if (isOnProcess)
+    {
+        showContinue(isEn);
+    }
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if ((e.type == SDL_QUIT) ||
+            (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+        {
+//            unload_SDL_And_Images();
+//            exit(1);
+            is_lvl_loaded_failed = true;
+        }
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if ((e.button.x > 268)&&(e.button.y > 344)&&
+                (e.button.x < 465)&&(e.button.y < 399))
+                //click new game
+            {
+                std::cout << "New game" << std::endl;
+                isOnProcess = true;
+                isWin = false;
+                score = tmpScore;
+                
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        mainStatus[i][k] = '.';
+                    }
+                }
+                
+                for (int i = 0; i < headerRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        headerStatus[i][k] = 1;
+                    }
+                }
+                
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < sideCols; k++)
+                    {
+                        sideStatus[i][k] = 1;
+                    }
+                }
+                is_data_loaded_failed = false;
+            }
+            if ((e.button.x > 494)&&(e.button.y > 344)&&
+                (e.button.x < 692)&&(e.button.y < 399))
+                //click continue
+            {
+                std::cout << "Continue" << std::endl;
+                is_data_loaded_failed = false;
+            }
+        }
+    }
+    renderScreen();
 }
 
 void renderTable()
@@ -287,8 +423,9 @@ void renderTable()
             showLine(originX + (i-1)*cellSide, originY, 2, cellSide*totalRows+2);
         }
     }
-
+    showReward(isWin); //is it neccessary?
     renderScreen();
+    is_data_loaded_failed = true;
 }
 
 void playing()
@@ -306,11 +443,28 @@ void playing()
         {
             if (e.key.keysym.sym == SDLK_r)
             {
+                while (isModified)
+                {
+                    askSave();
+                }
                 is_lvl_loaded_failed = true;
             }
         }
         if (e.type == SDL_MOUSEBUTTONDOWN)
         {
+            if ((e.button.x > 41)&&
+                (e.button.y > 532)&&
+                (e.button.x < 95)&&
+                (e.button.y < 586))
+                //click return button
+            {
+                while (isModified)
+                {
+                    askSave();
+                }
+                is_lvl_loaded_failed = true;
+            }
+            
             if ((e.button.x > originX)&&
                 (e.button.y > originY)&&
                 (e.button.x < originX + cellSide*totalCols)&&
@@ -338,6 +492,7 @@ void playing()
                         {
                             headerStatus[clickRow][clickCol] = 0;
                         }
+                        isModified = true;
                         isUpdated = false;
                     }
                 }
@@ -354,6 +509,7 @@ void playing()
                         {
                             sideStatus[clickRow][clickCol] = 0;
                         }
+                        isModified = true;
                         isUpdated = false;
                     }
                     else //main
@@ -365,6 +521,7 @@ void playing()
                             if (mainStatus[clickRow][clickCol] == '.')
                             {
                                 mainStatus[clickRow][clickCol] = '0';
+                                isModified = true;
                                 isUpdated = false;
                                 if (mainStatus[clickRow][clickCol] == mainTable[clickRow][clickCol])
                                 {
@@ -386,6 +543,7 @@ void playing()
                             if (mainStatus[clickRow][clickCol] == '0')
                             {
                                 mainStatus[clickRow][clickCol] = '.';
+                                isModified = true;
                                 isUpdated = false;
                                 if (mainStatus[clickRow][clickCol] == mainTable[clickRow][clickCol])
                                 {
@@ -511,6 +669,123 @@ void playing()
             }
         }
     }
+}
+
+void askSave()
+{
+    showBack();
+    showSaveProcess(isEn);
+    SDL_Event e;
+    while (SDL_PollEvent(&e))
+    {
+        if ((e.type == SDL_QUIT) ||
+            (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+        {
+//            unload_SDL_And_Images();
+//            exit(1);
+            is_lvl_loaded_failed = true;
+        }
+        if (e.type == SDL_MOUSEBUTTONDOWN)
+        {
+            if ((e.button.x > 268)&&(e.button.y > 344)&&
+                (e.button.x < 465)&&(e.button.y < 399))
+                //click don't save
+            {
+                std::cout << "Don't save" << std::endl;
+                //export data from status arrays to status file
+                std::string pathStatus = "/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/levels/level-"+std::to_string(level)+"-status.txt";
+                std::ofstream fStatus (pathStatus);
+                //isOnProcess isWin
+                fStatus << "0 0 " << tmpScore << std::endl;
+                //main
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        fStatus << ". ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus << std::endl;
+
+                //header
+                for (int i = 0; i < headerRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        fStatus << "1 ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus << std::endl;
+
+                //side
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < sideCols; k++)
+                    {
+                        fStatus << "1 ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus.close();
+                isModified = false;
+            }
+            if ((e.button.x > 494)&&(e.button.y > 344)&&
+                (e.button.x < 692)&&(e.button.y < 399))
+                //click save
+            {
+                std::cout << "Save" << std::endl;
+                //export data from status arrays to status file
+                std::string pathStatus = "/Users/haht/CodeSpace/Cpp/__LTNC__/XCode/nonogram/nonogram/levels/level-"+std::to_string(level)+"-status.txt";
+                std::ofstream fStatus (pathStatus);
+                //isOnProcess isWin
+                if (isWin)
+                {
+                    fStatus << "1 1 " << score << std::endl;
+                }
+                else
+                {
+                    fStatus << "1 0 " << score << std::endl;
+                }
+                //main
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        fStatus << mainStatus[i][k] << " ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus << std::endl;
+
+                //header
+                for (int i = 0; i < headerRows; i++)
+                {
+                    for (int k = 0; k < mainCols; k++)
+                    {
+                        fStatus << headerStatus[i][k] << " ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus << std::endl;
+
+                //side
+                for (int i = 0; i < mainRows; i++)
+                {
+                    for (int k = 0; k < sideCols; k++)
+                    {
+                        fStatus << sideStatus[i][k] << " ";
+                    }
+                    fStatus << std::endl;
+                }
+                fStatus.close();
+                
+                isModified = false;
+            }
+        }
+    }
+    renderScreen();
 }
 
 void updateScreen()
