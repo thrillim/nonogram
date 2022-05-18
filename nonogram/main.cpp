@@ -17,6 +17,7 @@ char **mainStatus = nullptr;
 int **headerStatus = nullptr, **sideStatus = nullptr;
 int clickRow, clickCol, score, tmpScore;
 int holdX1 = -1, holdY1 = -1, holdX2, holdY2;
+int alienStep;
 bool holding = false;
 bool isOnProcess = false; //check if was on process/playing
 bool isModified = false; //check if show save process alert or not
@@ -26,6 +27,7 @@ bool isUpdated = true;
 bool isWin = false;
 bool is_lvl_loaded_failed = true;
 bool is_data_loaded_failed = true;
+bool is_help_availble = false;
 
 void instruct();
 void chooseLevel();
@@ -34,6 +36,9 @@ void loadData();
 void askContinue();
 void renderTable();
 void playing();
+void cheat();
+void help();
+void alienSolver();
 void preventAfterWin();
 void askSave();
 void updateScreen();
@@ -334,6 +339,7 @@ void loadData()
         }
     }
     fileStatus.close();
+    alienStep = 3;
 }
 
 void askContinue()
@@ -508,6 +514,18 @@ void playing()
                 }
                 is_lvl_loaded_failed = true;
             }
+            if (e.key.keysym.sym == SDLK_o && level % 2 == 1)
+            {
+                cheat();
+                isModified = true;
+                isUpdated = false;
+            }
+            if (e.key.keysym.sym == SDLK_e && level % 2 == 0)
+            {
+                cheat();
+                isModified = true;
+                isUpdated = false;
+            }
         }
         if (e.type == SDL_MOUSEBUTTONDOWN)
         {
@@ -524,12 +542,37 @@ void playing()
                 is_lvl_loaded_failed = true;
             }
             
+            if ((e.button.x > 41)&&
+                (e.button.y > 463)&&
+                (e.button.x < 95)&&
+                (e.button.y < 519)&&
+                is_help_availble == true)
+                //click help button
+            {
+                help();
+                isModified = true;
+                isUpdated = false;
+            }
+            
+            if ((e.button.x > 41)&&
+                (e.button.y > 395)&&
+                (e.button.x < 95)&&
+                (e.button.y < 451)&&
+                alienStep > 0)
+                //click alien button
+            {
+                alienSolver();
+                isModified = true;
+                isUpdated = false;
+            }
+            
             if ((e.button.x > originX)&&
                 (e.button.y > originY)&&
                 (e.button.x < originX + cellSide*totalCols)&&
                 (e.button.y < originY + cellSide*totalRows))
                 //click inside the table
             {
+                is_help_availble = true;
                 clickCol = (e.button.x - originX)/cellSide;
                 clickRow = (e.button.y - originY)/cellSide;
                 if (clickRow < headerRows)
@@ -727,6 +770,115 @@ void playing()
                 holdX2 = (e.motion.y - originY)/cellSide - headerRows;
             }
         }
+    }
+}
+
+void cheat()
+{
+    for (int i = 0; i < mainRows; i++)
+    {
+        for (int k = 0; k < mainCols; k++)
+        {
+            mainStatus[i][k] = mainTable[i][k];
+            score = mainRows*mainCols;
+        }
+    }
+}
+
+void help()
+{
+    int limit = 1;
+    while (limit > 0)
+    {
+        int randRow = rand() % mainRows;
+        int randCol = rand() % mainCols;
+        std::cout << randRow << " " << randCol <<"\n";
+        if (mainStatus[randRow][randCol] != mainTable[randRow][randCol])
+        {
+            mainStatus[randRow][randCol] = mainTable[randRow][randCol];
+            score++;
+            limit--;
+        }
+    }
+}
+
+void alienSolver()
+{
+    if (alienStep == 3) //fill complete rows
+    {
+        std::cout << "alien rows \n";
+        for (int i = 0; i < mainRows; i++)
+        {
+            int cntRange = 0, cntFill = 0;
+            for (int k = 0; k < sideCols; k++)
+            {
+                cntFill += sideTable[i][k];
+                if (sideTable[i][k] > 0) {cntRange++;}
+            }
+            if (cntFill + cntRange - 1 == mainCols) //complete
+            {
+                int pos = mainCols-1;
+                for (int k = sideCols-1; k >= 0; k--)
+                {
+                    sideStatus[i][k] = 0;
+                    int amount = sideTable[i][k];
+                    while (amount > 0)
+                    {
+                        if (mainStatus[i][pos] == '.')
+                        {
+                            mainStatus[i][pos] = '0';
+                            score++;
+                        }
+                        pos--;
+                        amount--;
+                    }
+                    pos--;
+                }
+            }
+        }
+        std::cout << score << "\n";
+        alienStep--;
+    }
+    else if (alienStep == 2) //fill complete cols
+    {
+        std::cout << "alien cols \n";
+        for (int i = 0; i < mainCols; i++)
+        {
+            int cntRange = 0, cntFill = 0;
+            for (int k = 0; k < headerRows; k++)
+            {
+                cntFill += headerTable[k][i];
+                if (headerTable[k][i] > 0) {cntRange++;}
+            }
+            if (cntFill + cntRange - 1 == mainRows) //complete
+            {
+                int pos = mainRows-1;
+                for (int k = headerRows-1; k >= 0; k--)
+                {
+                    headerStatus[k][i] = 0;
+                    int amount = headerTable[k][i];
+                    while (amount > 0)
+                    {
+                        if (mainStatus[pos][i] == '.')
+                        {
+                            mainStatus[pos][i] = '0';
+                            score++;
+                        }
+                        pos--;
+                        amount--;
+                    }
+                    pos--;
+                }
+            }
+        }
+        std::cout << score << "\n";
+        alienStep--;
+    }
+    else
+    {
+        std::cout << "alien depth-first search \n";
+        std::cout << score << "\n";
+        alienStep--;
     }
 }
 
