@@ -804,17 +804,27 @@ void help()
 
 void alienSolver()
 {
-    if (alienStep == 3) //fill complete rows
+    if (alienStep == 3) //fill rows
     {
         std::cout << "alien rows \n";
         for (int i = 0; i < mainRows; i++)
         {
-            int cntRange = 0, cntFill = 0;
+            int cntRange = 0, cntFill = 0, maxRange = 1;
             for (int k = 0; k < sideCols; k++)
             {
                 cntFill += sideTable[i][k];
-                if (sideTable[i][k] > 0) {cntRange++;}
+                if (sideTable[i][k] > 0)
+                {
+                    cntRange++;
+                    if (sideTable[i][k] > maxRange)
+                    {
+                        maxRange = sideTable[i][k];
+                    }
+                }
             }
+            std::cout << "cntRange: " << cntRange << std::endl
+                      << "cntFill: " << cntFill << std::endl
+                      << "maxRange: " << maxRange << std::endl;
             if (cntFill + cntRange - 1 == mainCols) //complete
             {
                 int pos = mainCols-1;
@@ -835,20 +845,60 @@ void alienSolver()
                     pos--;
                 }
             }
+            else if (mainCols - (cntFill + cntRange - 1) < maxRange) //partial
+            {
+                int notSure = mainCols - (cntFill + cntRange - 1);
+                std::cout << "notSure: " << notSure << std::endl;
+                int pos = mainCols-1;
+                for (int k = sideCols-1; k >= 0; k--)
+                {
+                    int amount = sideTable[i][k] - notSure;
+                    if (sideTable[i][k] > 0)
+                    {
+                        if (amount > 0)
+                        {
+                            pos -= notSure;
+                            while (amount > 0)
+                            {
+                                if (mainStatus[i][pos] == '.')
+                                {
+                                    mainStatus[i][pos] = '0';
+                                    score++;
+                                }
+                                --pos;
+                                --amount;
+                            }
+                            --pos;
+                        }
+                        else
+                        {
+                            pos -= sideTable[i][k];
+                            --pos;
+                        }
+                    }
+                }
+            }
         }
         std::cout << score << "\n";
         alienStep--;
     }
-    else if (alienStep == 2) //fill complete cols
+    else if (alienStep == 2) //fill cols
     {
         std::cout << "alien cols \n";
         for (int i = 0; i < mainCols; i++)
         {
-            int cntRange = 0, cntFill = 0;
+            int cntRange = 0, cntFill = 0, maxRange = 1;
             for (int k = 0; k < headerRows; k++)
             {
                 cntFill += headerTable[k][i];
-                if (headerTable[k][i] > 0) {cntRange++;}
+                if (headerTable[k][i] > 0)
+                {
+                    cntRange++;
+                    if (headerTable[k][i] > maxRange)
+                    {
+                        maxRange = headerTable[k][i];
+                    }
+                }
             }
             if (cntFill + cntRange - 1 == mainRows) //complete
             {
@@ -868,6 +918,39 @@ void alienSolver()
                         amount--;
                     }
                     pos--;
+                }
+            }
+            else if (mainRows - (cntFill + cntRange - 1) < maxRange) //partial
+            {
+                int notSure = mainRows - (cntFill + cntRange - 1);
+                std::cout << "notSure: " << notSure << std::endl;
+                int pos = mainRows-1;
+                for (int k = headerRows-1; k >= 0; k--)
+                {
+                    int amount = headerTable[k][i] - notSure;
+                    if (headerTable[k][i] > 0)
+                    {
+                        if (amount > 0)
+                        {
+                            pos -= notSure;
+                            while (amount > 0)
+                            {
+                                if (mainStatus[pos][i] == '.')
+                                {
+                                    mainStatus[pos][i] = '0';
+                                    score++;
+                                }
+                                --pos;
+                                --amount;
+                            }
+                            --pos;
+                        }
+                        else
+                        {
+                            pos -= headerTable[k][i];
+                            --pos;
+                        }
+                    }
                 }
             }
         }
